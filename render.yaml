@@ -1,0 +1,62 @@
+databases:
+  - name: attendance-db
+    databaseName: attendance_manager
+    user: attendance_admin
+    plan: free
+
+services:
+  - type: web
+    name: attendance-java-service
+    runtime: docker
+    rootDir: java-service
+    plan: free
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /api/health
+
+  - type: web
+    name: attendance-api
+    runtime: node
+    rootDir: server
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: attendance-db
+          property: connectionString
+      - key: JAVA_SERVICE_URL
+        fromService:
+          type: web
+          name: attendance-java-service
+          property: host
+          envVarKey: JAVA_SERVICE_URL
+      - key: CLIENT_ORIGIN
+        fromService:
+          type: web
+          name: attendance-client
+          property: host
+          envVarKey: CLIENT_ORIGIN
+          prefix: https://
+
+  - type: web
+    name: attendance-client
+    runtime: static
+    rootDir: client
+    buildCommand: npm install && npm run build
+    staticPublishPath: ./dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: VITE_API_URL
+        fromService:
+          type: web
+          name: attendance-api
+          property: host
+          envVarKey: VITE_API_URL
+          prefix: https://
