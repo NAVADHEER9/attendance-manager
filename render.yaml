@@ -1,3 +1,4 @@
+
 databases:
   - name: attendance-db
     databaseName: attendance_manager
@@ -33,14 +34,13 @@ services:
           type: web
           name: attendance-java-service
           property: host
-          envVarKey: JAVA_SERVICE_URL
+        prefix: https://
       - key: CLIENT_ORIGIN
         fromService:
           type: web
           name: attendance-client
           property: host
-          envVarKey: CLIENT_ORIGIN
-          prefix: https://
+        prefix: https://
 
   - type: web
     name: attendance-client
@@ -58,5 +58,4 @@ services:
           type: web
           name: attendance-api
           property: host
-          envVarKey: VITE_API_URL
-          prefix: https://
+        prefix: https://
